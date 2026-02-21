@@ -7,6 +7,19 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+// Validate required environment variables
+const requiredEnv = ['GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET'];
+const missingEnv = requiredEnv.filter(key => !process.env[key]);
+
+if (missingEnv.length > 0) {
+  console.error(`\x1b[31mCRITICAL ERROR: Missing required environment variables: ${missingEnv.join(', ')}\x1b[0m`);
+  console.error('Please check your .env file or environment configuration.');
+}
+
+if (!process.env.GEMINI_API_KEY) {
+  console.warn('\x1b[33mWARNING: GEMINI_API_KEY is missing. AI documentation features will be disabled.\x1b[0m');
+}
+
 async function startServer() {
   const app = express();
   const PORT = 3000;

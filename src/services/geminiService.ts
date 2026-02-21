@@ -1,6 +1,19 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+// Lazy initialization to prevent crash if process.env is missing or key is empty
+let aiInstance: GoogleGenAI | null = null;
+
+function getAI() {
+  if (!aiInstance) {
+    const apiKey = typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : undefined;
+    if (!apiKey) {
+      console.warn("GEMINI_API_KEY is missing. AI features will be disabled.");
+      return null;
+    }
+    aiInstance = new GoogleGenAI({ apiKey });
+  }
+  return aiInstance;
+}
 
 export interface FileDoc {
   summary: string;
@@ -10,6 +23,11 @@ export interface FileDoc {
 }
 
 export async function generateFileDoc(fileName: string, content: string): Promise<FileDoc> {
+  const ai = getAI();
+  if (!ai) {
+    throw new Error("Gemini API key is not configured.");
+  }
+
   const response = await ai.models.generateContent({
     model: "gemini-3.1-pro-preview",
     contents: `Analyze the following C++ file and provide a structured documentation.
