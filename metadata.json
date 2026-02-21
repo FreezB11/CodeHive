@@ -1,0 +1,5 @@
+{
+  "name": "CodeHive: C++ Codebase Visualizer",
+  "description": "Visualize large C++ codebases as interactive spatial graphs with AI-generated documentation and dependency mapping.",
+  "requestFramePermissions": []
+}
