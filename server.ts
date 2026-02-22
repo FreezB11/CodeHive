@@ -27,6 +27,8 @@ async function startServer() {
   app.set('trust proxy', 1); // Trust the nginx proxy
   app.use(express.json());
   app.use(cookieParser());
+  const isLocal = !process.env.APP_URL?.includes('.run.app');
+  
   app.use(session({
     secret: "codespatial-secret",
     resave: true,
@@ -34,8 +36,9 @@ async function startServer() {
     proxy: true, // Required for secure cookies behind a proxy
     name: 'codespatial.sid',
     cookie: {
-      secure: true,
-      sameSite: 'none',
+      // Only force secure/SameSite=None if we are in the AI Studio environment (HTTPS iframe)
+      secure: !isLocal,
+      sameSite: isLocal ? 'lax' : 'none',
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000
     }
@@ -55,7 +58,20 @@ async function startServer() {
   // --- GitHub OAuth ---
 
   app.get("/api/auth/github/url", (req, res) => {
-    const rawAppUrl = process.env.APP_URL || "";
+    // Use APP_URL if provided, otherwise fallback to the request's origin
+    // This helps when accessing via IP address in a local network
+    const host = req.get('host');
+    // Default to http for local development, localhost, or IP-based domains
+    const isLocal = host?.includes('localhost') || 
+                    host?.includes('127.0.0.1') || 
+                    host?.match(/^\d+\.\d+\.\d+\.\d+/) ||
+                    host?.includes('.nip.io') ||
+                    host?.includes('.test');
+    
+    const detectedProtocol = isLocal ? 'http' : 'https';
+    
+    const fallbackUrl = `${detectedProtocol}://${host}`;
+    const rawAppUrl = process.env.APP_URL || fallbackUrl;
     const appUrl = rawAppUrl.replace(/\/$/, "");
     const redirectUri = `${appUrl}/auth/github/callback`;
 

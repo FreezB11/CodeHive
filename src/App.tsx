@@ -1023,9 +1023,9 @@ export default function App() {
       }
 
       // 3. Limit to 2000 files for performance (increased from 1000)
-      const filesToFetch = filesInScope.slice(0, 2000);
-      if (filesInScope.length > 2000) {
-        console.warn(`Truncating analysis to first 2000 files out of ${filesInScope.length}`);
+      const filesToFetch = filesInScope.slice(0, 3000);
+      if (filesInScope.length > 3000) {
+        console.warn(`Truncating analysis to first 3000 files out of ${filesInScope.length}`);
       }
 
       const loadedFiles: CodeFile[] = [];
